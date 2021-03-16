@@ -5,8 +5,20 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-<TextView
+<androidx.appcompat.widget.AppCompatEditText
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:text="test"/>
+    android:layout_height="wrap_content"
+    android:id="@+id/et_info"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_send"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="parent"
+        android:text="send"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

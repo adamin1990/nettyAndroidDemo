@@ -4,6 +4,11 @@ import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.adamin.nettyandroid.netty.bean.SocketBean;
+import com.blankj.utilcode.util.DeviceUtils;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -50,14 +55,21 @@ public class NettyClientHandler<T> extends SimpleChannelInboundHandler<String> {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.WRITER_IDLE) {   //发送心跳
+                Log.e("写空闲：","发送心跳"+event.state());
 //                ctx.channel().writeAndFlush("Heartbeat" + System.getProperty("line.separator"));
                 if (isSendheartBeat) {
                     if (heartBeatData == null) {
-                        ctx.channel().writeAndFlush("Heartbeat" + packetSeparator);
+                        SocketBean socketBean=new SocketBean();
+                        socketBean.setMessagge("ping");
+                        socketBean.setData("heartBeat");
+                        socketBean.setSerialNumber(1L);
+                        socketBean.setSn(DeviceUtils.getUniqueDeviceId(true));
+                        socketBean.setCmdType(CmdType.TYPE_HEART_BEAT);
+                        ctx.channel().writeAndFlush(new GsonBuilder().disableHtmlEscaping().create().toJson(socketBean) + packetSeparator);
                     } else {
                         if (heartBeatData instanceof String) {
-//
-                            ctx.channel().writeAndFlush("heartBeat" + packetSeparator);
+                             Log.e("心跳内容：",new GsonBuilder().disableHtmlEscaping().create().toJson(heartBeatData));
+                            ctx.channel().writeAndFlush(new GsonBuilder().disableHtmlEscaping().create().toJson(heartBeatData) + packetSeparator);
                         } else if (heartBeatData instanceof byte[]) {
 //                            Log.d(TAG, "userEventTriggered: byte");
                             ByteBuf buf = Unpooled.copiedBuffer((byte[]) heartBeatData);
