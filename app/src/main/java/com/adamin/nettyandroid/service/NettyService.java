@@ -8,9 +8,11 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.adamin.nettyandroid.netty.CmdType;
+import com.adamin.nettyandroid.netty.ConnectState;
 import com.adamin.nettyandroid.netty.NettyClient;
 import com.adamin.nettyandroid.netty.NettyClientListener;
 import com.adamin.nettyandroid.netty.bean.SocketBean;
+import com.adamin.nettyandroid.util.DeviceUtil;
 import com.blankj.utilcode.util.DeviceUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -45,6 +47,24 @@ public class NettyService extends Service implements NettyClientListener<String>
     @Override
     public void onClientStatusConnectChanged(int statusCode, int index) {
         Log.e("状态改变",statusCode+"");
+       if(statusCode== ConnectState.STATUS_CONNECT_SUCCESS){  //连接成功,鉴权
+           deviceAuth();
+
+
+
+       }
+    }
+
+    private void deviceAuth() {
+        SocketBean socketBean=new SocketBean();
+        socketBean.setCmdType(CmdType.TYPE_AUTH);
+        socketBean.setSn(DeviceUtils.getUniqueDeviceId(true));
+        socketBean.setMessagge("auth");
+        socketBean.setData("adamin");
+        socketBean.setSerialNumber(DeviceUtil.getFlowId());
+        sendSocketMsg(socketBean);
+
+
     }
 
 
@@ -79,4 +99,19 @@ public class NettyService extends Service implements NettyClientListener<String>
         nettyClient.setListener(this);
         nettyClient.connect();//连接服务器
     }
+
+    /**
+     * 向服务端发送数据
+     * @param data
+     */
+    public void sendSocketMsg(SocketBean data) {
+
+        if (nettyClient != null && nettyClient.getConnectStatus()) {
+            nettyClient.sendMsgToServer(""+new Gson().toJson(data));
+        } else {
+
+        }
+
+    }
+
 }

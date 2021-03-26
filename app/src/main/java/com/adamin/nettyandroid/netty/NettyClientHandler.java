@@ -1,12 +1,10 @@
 package com.adamin.nettyandroid.netty;
 
-import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.adamin.nettyandroid.netty.bean.SocketBean;
 import com.blankj.utilcode.util.DeviceUtils;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import io.netty.buffer.ByteBuf;
@@ -25,7 +23,6 @@ public class NettyClientHandler<T> extends SimpleChannelInboundHandler<String> {
     private Object heartBeatData;
     private String packetSeparator;
     private int followId = 1;
-
     //    private static final ByteBuf HEARTBEAT_SEQUENCE = Unpooled.unreleasableBuffer(Unpooled.copiedBuffer("Heartbeat"+System.getProperty("line.separator"),
 //            CharsetUtil.UTF_8));
     byte[] requestBody = {(byte) 0xFE, (byte) 0xED, (byte) 0xFE, 5, 4, (byte) 0xFF, 0x0a};
