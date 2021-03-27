@@ -16,6 +16,7 @@ import com.adamin.nettyandroid.util.DeviceUtil;
 import com.blankj.utilcode.util.DeviceUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 public class NettyService extends Service implements NettyClientListener<String> {
     private static NettyService mService;
@@ -40,7 +41,12 @@ public class NettyService extends Service implements NettyClientListener<String>
 
     @Override
     public void onMessageResponseClient(String msg, int index) {
-        Log.e("接受消息",msg);
+        Gson gson=new Gson();
+        SocketBean socketBean = gson.fromJson(msg, new TypeToken<SocketBean>() {
+        }.getType());
+
+        Log.e("接受消息",msg+"-------"+socketBean.getCmdType());
+        sendSocketMsg(socketBean);
 
     }
 

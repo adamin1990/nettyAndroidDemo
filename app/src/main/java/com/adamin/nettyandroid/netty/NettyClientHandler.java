@@ -104,7 +104,7 @@ public class NettyClientHandler<T> extends SimpleChannelInboundHandler<String> {
     public void channelInactive(ChannelHandlerContext ctx) {
         Log.e(TAG, "channelInactive");
 //        NettyTcpClient.getInstance().setConnectStatus(false);
-//        listener.onServiceStatusConnectChanged(NettyClientListener.STATUS_CONNECT_CLOSED);
+        listener.onClientStatusConnectChanged(ConnectState.STATUS_CONNECT_CLOSED,index);
         // NettyTcpClient.getInstance().reconnect();
 
     }
@@ -118,6 +118,7 @@ public class NettyClientHandler<T> extends SimpleChannelInboundHandler<String> {
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, String msg) {
          Log.e(TAG, "channelRead0:"+msg);
+         listener.onMessageResponseClient(msg,index);
 
     }
 
@@ -127,8 +128,7 @@ public class NettyClientHandler<T> extends SimpleChannelInboundHandler<String> {
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        // Close the connection when an exception is raised.
-//        NettyTcpClient.getInstance().setConnectStatus(false);
+
         Log.e(TAG, "exceptionCaught:" + cause.getMessage());
         listener.onClientStatusConnectChanged(ConnectState.STATUS_CONNECT_ERROR, index);
         cause.printStackTrace();

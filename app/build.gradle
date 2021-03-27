@@ -45,6 +45,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.blankj:utilcodex:1.30.6'
+    compileOnly 'de.robv.android.xposed:api:82'
 }
 repositories {
     maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
