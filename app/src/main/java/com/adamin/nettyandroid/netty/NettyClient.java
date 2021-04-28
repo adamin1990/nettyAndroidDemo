@@ -5,6 +5,8 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.blankj.utilcode.util.LogUtils;
+
 import java.util.concurrent.TimeUnit;
 
 import io.netty.bootstrap.Bootstrap;
@@ -36,7 +38,7 @@ public class NettyClient {
 
     private Channel channel;
 
-    private boolean isConnect = false;
+    private volatile boolean isConnect = false;
 
     /**
      * 最大重连次数
@@ -46,7 +48,7 @@ public class NettyClient {
     private int reconnectNum = MAX_CONNECT_TIMES;
 
     private boolean isNeedReconnect = true;
-    private boolean isConnecting = false;
+    private volatile boolean isConnecting = false;
 
     private long reconnectIntervalTime = 5000;
     private static final Integer CONNECT_TIMEOUT_MILLIS = 5000;
@@ -85,6 +87,9 @@ public class NettyClient {
         this.host = host;
         this.tcp_port = tcp_port;
         this.mIndex = index;
+        if(group==null){
+            group = new NioEventLoopGroup();
+        }
     }
 
     public int getMaxConnectTimes() {
@@ -138,7 +143,6 @@ public class NettyClient {
             ChannelFuture channelFuture = null;
             if (!isConnect) {
                 isConnecting = true;
-                group = new NioEventLoopGroup();
                 Bootstrap bootstrap = new Bootstrap().group(group)
                         .option(ChannelOption.TCP_NODELAY, true)//屏蔽Nagle算法试图
                         .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
@@ -191,21 +195,12 @@ public class NettyClient {
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
-                    isConnect = false;
-                    listener.onClientStatusConnectChanged(ConnectState.STATUS_CONNECT_CLOSED, mIndex);
+                    isConnecting=false;
                     if (null != channelFuture) {
                         if (channelFuture.channel() != null && channelFuture.channel().isOpen()) {
                             channelFuture.channel().close();
                         }
                     }
-                    group.shutdownGracefully();
-                    long mCureentTime=System.currentTimeMillis();
-                    if(mCureentTime-lastConnect<1000l){//重连间隔小于 1s
-                        Log.e(TAG,"重连间隔太短");
-                        SystemClock.sleep(2000);
-                    }
-                    lastConnect=mCureentTime;
-                    reconnect();
                 }
             }
         }
@@ -219,6 +214,9 @@ public class NettyClient {
         group.shutdownGracefully();
     }
 
+    /**
+     * 设置netty 服务状态
+     */
     public void reconnect() {
         Log.e(TAG, "reconnect");
         if (isNeedReconnect && reconnectNum > 0 && !isConnect) {
@@ -298,10 +296,12 @@ public class NettyClient {
      * @return  获取TCP连接状态
      */
     public boolean getConnectStatus() {
+        LogUtils.e("----get status---"+isConnect);
         return isConnect;
     }
 
     public boolean isConnecting() {
+        LogUtils.e("----get isConnecting---"+isConnecting);
         return isConnecting;
     }
 

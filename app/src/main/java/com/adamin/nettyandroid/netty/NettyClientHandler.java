@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.adamin.nettyandroid.netty.bean.SocketBean;
+import com.adamin.nettyandroid.service.NettyService;
 import com.blankj.utilcode.util.DeviceUtils;
 import com.google.gson.GsonBuilder;
 
@@ -90,9 +91,8 @@ public class NettyClientHandler<T> extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         Log.e(TAG, "channelActive");
-//        NettyTcpClient.getInstance().setConnectStatus(true);
         listener.onClientStatusConnectChanged(ConnectState.STATUS_CONNECT_SUCCESS, index);
-
+        NettyService.getInstance().setState(true);
     }
 
     /**
@@ -103,9 +103,8 @@ public class NettyClientHandler<T> extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         Log.e(TAG, "channelInactive");
-//        NettyTcpClient.getInstance().setConnectStatus(false);
         listener.onClientStatusConnectChanged(ConnectState.STATUS_CONNECT_CLOSED,index);
-        // NettyTcpClient.getInstance().reconnect();
+        NettyService.getInstance().setState(false);
 
     }
 
