@@ -2,6 +2,7 @@ package com.adamin.nettyandroid.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -14,6 +15,7 @@ import com.adamin.nettyandroid.netty.NettyClientListener;
 import com.adamin.nettyandroid.netty.bean.SocketBean;
 import com.adamin.nettyandroid.util.DeviceUtil;
 import com.blankj.utilcode.util.DeviceUtils;
+import com.blankj.utilcode.util.LogUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -21,12 +23,23 @@ import com.google.gson.reflect.TypeToken;
 public class NettyService extends Service implements NettyClientListener<String> {
     private static NettyService mService;
     private NettyClient nettyClient;
+    private  NettyTimer nettyTimer;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        mService=this;
+        if(nettyTimer==null){
+            nettyTimer=new NettyTimer(1000*20,1000);
+            nettyTimer.start();
+        }
+        initTcp();
+    }
 
     public static NettyService getInstance() {
         if (mService == null) {
@@ -37,6 +50,14 @@ public class NettyService extends Service implements NettyClientListener<String>
             }
         }
         return mService;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(nettyTimer!=null){
+            nettyTimer.cancel();
+        }
     }
 
     @Override
@@ -91,7 +112,7 @@ public class NettyService extends Service implements NettyClientListener<String>
         socketBean.setSn(DeviceUtils.getUniqueDeviceId(true));
         socketBean.setCmdType(CmdType.TYPE_HEART_BEAT);
         nettyClient = new NettyClient.Builder()
-                .setHost("192.168.3.7")    //设置服务端地址
+                .setHost("192.168.0.10")    //设置服务端地址
                 .setTcpPort(1024) //设置服务端端口号
                 .setMaxReconnectTimes(Integer.MAX_VALUE)    //设置最大重连次数
                 .setReconnectIntervalTime(5000)    //设置重连间隔时间。单位：毫秒
@@ -118,6 +139,69 @@ public class NettyService extends Service implements NettyClientListener<String>
 
         }
 
+    }
+
+    /**
+     * 连接netty服务
+     */
+    public void connect(){
+        if(nettyClient==null){
+            initTcp();
+            return;
+        }
+        nettyClient.connect();
+    }
+
+    public void setState(boolean state){
+        LogUtils.e("----set connectt status---"+state+"---"+nettyClient);
+
+        synchronized (NettyService.this){
+            LogUtils.e("----set connect status---"+state);
+            if(nettyClient!=null){
+                nettyClient.setConnectStatus(state);
+            }else{
+                LogUtils.e("----netty is null---"+nettyClient);
+            }
+
+        }
+    }
+
+    /**
+     * 定时检测长链接
+     */
+    class NettyTimer extends CountDownTimer{
+
+        /**
+         * @param millisInFuture    The number of millis in the future from the call
+         *                          to {@link #start()} until the countdown is done and {@link #onFinish()}
+         *                          is called.
+         * @param countDownInterval The interval along the way to receive
+         *                          {@link #onTick(long)} callbacks.
+         */
+        public NettyTimer(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+
+        }
+
+        @Override
+        public void onFinish() {
+            if(nettyTimer!=null){
+                nettyTimer.start();
+            }
+            LogUtils.e("------timer finish----"+nettyClient);
+            if(nettyClient!=null){
+                //未连接去连接
+                if(!nettyClient.getConnectStatus()&&!nettyClient.isConnecting()){
+                 connect();
+
+                }
+            }
+
+        }
     }
 
 }
