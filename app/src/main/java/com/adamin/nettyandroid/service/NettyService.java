@@ -112,7 +112,7 @@ public class NettyService extends Service implements NettyClientListener<String>
         socketBean.setSn(DeviceUtils.getUniqueDeviceId(true));
         socketBean.setCmdType(CmdType.TYPE_HEART_BEAT);
         nettyClient = new NettyClient.Builder()
-                .setHost("192.168.0.10")    //设置服务端地址
+                .setHost("192.168.3.7")    //设置服务端地址
                 .setTcpPort(1024) //设置服务端端口号
                 .setMaxReconnectTimes(Integer.MAX_VALUE)    //设置最大重连次数
                 .setReconnectIntervalTime(5000)    //设置重连间隔时间。单位：毫秒
